@@ -52,6 +52,19 @@ class PlaylistsService {
     return result.rows;
   }
 
+  async getPlaylistsByOwnerV2(owner) {
+    const query = {
+      text: 'SELECT * FROM playlists WHERE owner = $1',
+      values: [owner],
+    };
+    const result = await this._pool.query(query);
+
+    if (!result.rowCount) {
+      return [];
+    }
+    return result.rows;
+  }
+
   async deletePlaylistById(id) {
     const query = {
       text: 'DELETE FROM playlists WHERE id = $1',
@@ -78,6 +91,32 @@ class PlaylistsService {
     if (playlist.owner !== owner) {
       throw new AuthorizationError('Anda tidak berhak mengakses resource ini');
     }
+  }
+
+  async verifyPlaylistOwnerV2({ id, owner }) {
+    const query = {
+      text: 'SELECT * FROM playlists WHERE id = $1',
+      values: [id],
+    };
+    const result = await this._pool.query(query);
+    if (!result.rowCount) {
+      throw new NotFoundError('Playlist tidak ditemukan');
+    }
+    const playlist = result.rows[0];
+    if (playlist.owner !== owner) {
+      return false;
+    }
+    return true;
+  }
+
+  async getPlaylistsByArrayOfId(ids) {
+    const query = {
+      text: 'SELECT * FROM playlists WHERE id = ANY($1::text[])',
+      values: [ids],
+    };
+    const result = await this._pool.query(query);
+
+    return result.rows;
   }
 }
 

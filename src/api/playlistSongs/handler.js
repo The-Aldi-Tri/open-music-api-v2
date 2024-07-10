@@ -1,9 +1,19 @@
+const AuthorizationError = require('../../exceptions/AuthorizationError');
+
 class PlaylistSongsHandler {
-  constructor(playlistSongsService, playlistsService, songsService, usersService, validator) {
+  constructor(
+    playlistSongsService,
+    playlistsService,
+    songsService,
+    usersService,
+    collaborationsService,
+    validator,
+  ) {
     this._playlistSongsService = playlistSongsService;
     this._playlistsService = playlistsService;
     this._songsService = songsService;
     this._usersService = usersService;
+    this._collaborationsService = collaborationsService;
     this._validator = validator;
   }
 
@@ -14,8 +24,25 @@ class PlaylistSongsHandler {
     const playlistId = request.params.id;
     const { songId } = request.payload;
 
-    await this._playlistsService.verifyPlaylistOwner({ id: playlistId, owner: credentialId });
     await this._songsService.getSongById(songId);
+
+    const isOwner = await this._playlistsService.verifyPlaylistOwnerV2(
+      {
+        id: playlistId,
+        owner: credentialId,
+      },
+    );
+    const isCollaborator = await this._collaborationsService.verifyCollaboration(
+      {
+        playlistId,
+        userId: credentialId,
+      },
+    );
+
+    if (!isOwner && !isCollaborator) {
+      throw new AuthorizationError('Anda tidak berhak mengakses resource ini');
+    }
+
     await this._playlistSongsService.addPlaylistSong({ playlistId, songId });
 
     const response = h.response({
@@ -30,7 +57,24 @@ class PlaylistSongsHandler {
     const { id: credentialId } = request.auth.credentials;
     const playlistId = request.params.id;
 
-    await this._playlistsService.verifyPlaylistOwner({ id: playlistId, owner: credentialId });
+    const isOwner = await this._playlistsService.verifyPlaylistOwnerV2(
+      {
+        id: playlistId,
+        owner: credentialId,
+
+      },
+    );
+    const isCollaborator = await this._collaborationsService.verifyCollaboration(
+      {
+        playlistId,
+        userId: credentialId,
+      },
+    );
+
+    if (!isOwner && !isCollaborator) {
+      throw new AuthorizationError('Anda tidak berhak mengakses resource ini');
+    }
+
     const playlist = await this._playlistsService.getPlaylistById(playlistId);
     const playlistSongs = await this._playlistSongsService.getPlaylistSongsByPlaylistId(playlistId);
 
@@ -64,7 +108,24 @@ class PlaylistSongsHandler {
     const playlistId = request.params.id;
     const { songId } = request.payload;
 
-    await this._playlistsService.verifyPlaylistOwner({ id: playlistId, owner: credentialId });
+    const isOwner = await this._playlistsService.verifyPlaylistOwnerV2(
+      {
+        id: playlistId,
+        owner: credentialId,
+
+      },
+    );
+    const isCollaborator = await this._collaborationsService.verifyCollaboration(
+      {
+        playlistId,
+        userId: credentialId,
+      },
+    );
+
+    if (!isOwner && !isCollaborator) {
+      throw new AuthorizationError('Anda tidak berhak mengakses resource ini');
+    }
+
     await this._playlistSongsService.deletePlaylistSongBySongId(songId);
 
     return {

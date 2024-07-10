@@ -1,9 +1,17 @@
 const ClientError = require('../../exceptions/ClientError');
 
 class PlaylistsHandler {
-  constructor(playlistsService, playlistSongsService, validator) {
+  constructor(
+    playlistsService,
+    playlistSongsService,
+    collaborationsService,
+    usersService,
+    validator,
+  ) {
     this._playlistsService = playlistsService;
     this._playlistSongsService = playlistSongsService;
+    this._collaborationsService = collaborationsService;
+    this._usersService = usersService;
     this._validator = validator;
   }
 
@@ -26,20 +34,32 @@ class PlaylistsHandler {
     return response;
   }
 
-  async getPlaylistsByOwnerHandler(request, h) {
+  async getPlaylistsHandler(request, h) {
     const { id: credentialId } = request.auth.credentials;
 
-    const playlists = await this._playlistsService.getPlaylistsByOwner(credentialId);
+    const playlists = await this._playlistsService.getPlaylistsByOwnerV2(credentialId);
+
+    const collabRecords = await this._collaborationsService.getCollaborationPlaylists(credentialId);
+    const ids = collabRecords.map((col) => col.playlist_id);
+
+    const collabPlaylists = ids ? await this._playlistsService.getPlaylistsByArrayOfId(ids) : [];
+
+    const allPlaylist = [...playlists, ...collabPlaylists];
+
+    const allPlaylist2 = await Promise.all(allPlaylist.map(async (pl) => {
+      const { username } = await this._usersService.getUserById(pl.owner);
+      return {
+        id: pl.id,
+        name: pl.name,
+        username,
+      };
+    }));
 
     return {
       status: 'success',
       message: 'Playlists berhasil ditemukan',
       data: {
-        playlists: playlists.map((playlist) => ({
-          id: playlist.id,
-          name: playlist.name,
-          username: playlist.owner,
-        })),
+        playlists: allPlaylist2,
       },
     };
   }
@@ -50,6 +70,7 @@ class PlaylistsHandler {
 
     await this._playlistsService.verifyPlaylistOwner({ id: playlistId, owner: credentialId });
     await this._playlistSongsService.deletePlaylistSongsByPlaylistId(playlistId);
+    await this._collaborationsService.deleteCollaborationsByPlaylistId(playlistId);
     await this._playlistsService.deletePlaylistById(playlistId);
 
     return {
