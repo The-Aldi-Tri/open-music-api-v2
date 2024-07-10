@@ -6,12 +6,14 @@ class PlaylistsHandler {
     playlistSongsService,
     collaborationsService,
     usersService,
+    playlistSongActivitiesService,
     validator,
   ) {
     this._playlistsService = playlistsService;
     this._playlistSongsService = playlistSongsService;
     this._collaborationsService = collaborationsService;
     this._usersService = usersService;
+    this._playlistSongActivitiesService = playlistSongActivitiesService;
     this._validator = validator;
   }
 
@@ -71,6 +73,7 @@ class PlaylistsHandler {
     await this._playlistsService.verifyPlaylistOwner({ id: playlistId, owner: credentialId });
     await this._playlistSongsService.deletePlaylistSongsByPlaylistId(playlistId);
     await this._collaborationsService.deleteCollaborationsByPlaylistId(playlistId);
+    await this._playlistSongActivitiesService.deleteActivitiesByPlaylistId(playlistId);
     await this._playlistsService.deletePlaylistById(playlistId);
 
     return {

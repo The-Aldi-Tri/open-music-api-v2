@@ -7,6 +7,7 @@ class PlaylistSongsHandler {
     songsService,
     usersService,
     collaborationsService,
+    playlistSongActivitiesService,
     validator,
   ) {
     this._playlistSongsService = playlistSongsService;
@@ -14,6 +15,7 @@ class PlaylistSongsHandler {
     this._songsService = songsService;
     this._usersService = usersService;
     this._collaborationsService = collaborationsService;
+    this._playlistSongActivitiesService = playlistSongActivitiesService;
     this._validator = validator;
   }
 
@@ -44,6 +46,13 @@ class PlaylistSongsHandler {
     }
 
     await this._playlistSongsService.addPlaylistSong({ playlistId, songId });
+
+    await this._playlistSongActivitiesService.addActivities({
+      playlistId,
+      song_id: songId,
+      user_id: credentialId,
+      action: 'add',
+    });
 
     const response = h.response({
       status: 'success',
@@ -127,6 +136,13 @@ class PlaylistSongsHandler {
     }
 
     await this._playlistSongsService.deletePlaylistSongBySongId(songId);
+
+    await this._playlistSongActivitiesService.addActivities({
+      playlistId,
+      song_id: songId,
+      user_id: credentialId,
+      action: 'delete',
+    });
 
     return {
       status: 'success',

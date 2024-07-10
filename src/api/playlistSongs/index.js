@@ -10,6 +10,7 @@ module.exports = {
     songsService,
     usersService,
     collaborationsService,
+    playlistSongActivitiesService,
     validator,
   }) => {
     const playlistSongsHandler = new PlaylistSongsHandler(
@@ -18,6 +19,7 @@ module.exports = {
       songsService,
       usersService,
       collaborationsService,
+      playlistSongActivitiesService,
       validator,
     );
     server.route(routes(playlistSongsHandler));

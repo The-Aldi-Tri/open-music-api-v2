@@ -10,7 +10,7 @@ exports.up = (pgm) => {
     song_id: { type: 'text', references: 'songs(id)' }, // Foreign key reference to songs table
     user_id: { type: 'text', references: 'users(id)' }, // Foreign key reference to users table
     action: { type: 'text', notNull: true },
-    time: { type: 'bigint', notNull: true },
+    time: { type: 'text', notNull: true },
   });
 };
 

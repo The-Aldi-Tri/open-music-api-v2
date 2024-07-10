@@ -35,7 +35,7 @@ class PlaylistSongsService {
     if (!result.rowCount) {
       throw new NotFoundError('Playlist Song tidak ditemukan');
     }
-    return result.rows;
+    return result.rows; // watch this
   }
 
   async deletePlaylistSongBySongId(songId) {
