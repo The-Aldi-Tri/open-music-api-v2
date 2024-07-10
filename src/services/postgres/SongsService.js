@@ -126,6 +126,20 @@ class SongsService {
       throw new NotFoundError('Song gagal dihapus. Id tidak ditemukan');
     }
   }
+
+  async getSongsByArrayOfId(ids) {
+    const query = {
+      text: 'SELECT * FROM songs WHERE id = ANY($1::text[])',
+      values: [ids],
+    };
+    const result = await this._pool.query(query);
+
+    if (!result.rows.length) {
+      throw new NotFoundError('Song tidak ditemukan');
+    }
+
+    return result.rows.map(mapDBToSongModel);
+  }
 }
 
 module.exports = SongsService;
