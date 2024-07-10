@@ -4,11 +4,10 @@
  * @returns {Promise<void> | void}
  */
 exports.up = (pgm) => {
-  pgm.createTable('users', {
+  pgm.createTable('collaborations', {
     id: { type: 'text', primaryKey: true },
-    username: { type: 'text', notNull: true },
-    password: { type: 'text', notNull: true },
-    fullname: { type: 'text', notNull: true },
+    playlist_id: { type: 'text', references: 'playlists(id)' }, // Foreign key reference to playlists table
+    user_id: { type: 'text', references: 'users(id)' }, // Foreign key reference to users table
   });
 };
 
@@ -18,5 +17,5 @@ exports.up = (pgm) => {
  * @returns {Promise<void> | void}
  */
 exports.down = (pgm) => {
-  pgm.dropTable('users');
+  pgm.dropTable('collaborations');
 };
