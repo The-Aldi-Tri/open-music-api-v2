@@ -11,7 +11,11 @@ exports.up = (pgm) => {
     genre: { type: 'text', notNull: true },
     performer: { type: 'text', notNull: true },
     duration: { type: 'integer' },
-    album_id: { type: 'text', references: 'albums(id)' }, // Foreign key reference to albums table
+    album_id: {
+      type: 'text',
+      references: 'albums(id)',
+      onDelete: 'CASCADE',
+    }, // Foreign key reference to albums table
     created_at: { type: 'bigint', notNull: true },
     updated_at: { type: 'bigint', notNull: true },
   });
@@ -23,5 +27,7 @@ exports.up = (pgm) => {
  * @returns {Promise<void> | void}
  */
 exports.down = (pgm) => {
-  pgm.dropTable('albums');
+  pgm.dropConstraint('songs', 'songs_album_id_fkey');
+
+  pgm.dropTable('songs');
 };
