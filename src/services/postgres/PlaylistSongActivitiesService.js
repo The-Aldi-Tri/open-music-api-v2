@@ -2,7 +2,6 @@ const { Pool } = require('pg');
 const { nanoid } = require('nanoid');
 const InvariantError = require('../../exceptions/InvariantError');
 const NotFoundError = require('../../exceptions/NotFoundError');
-const AuthorizationError = require('../../exceptions/AuthorizationError');
 
 class PlaylistSongActivitiesService {
   constructor() {
@@ -10,7 +9,10 @@ class PlaylistSongActivitiesService {
   }
 
   async addActivities({
-    playlistId, song_id, user_id, action,
+    playlistId,
+    song_id,
+    user_id,
+    action,
   }) {
     const id = `activity-${nanoid(16)}`;
     const time = new Date().toISOString();
@@ -39,22 +41,8 @@ class PlaylistSongActivitiesService {
     if (!result.rowCount) {
       throw new NotFoundError('Activity tidak ditemukan');
     }
-    const arr = [];
 
-    for (let i = 0; i < result.rowCount; i += 1) {
-      arr.push(result.rows[i]);
-    }
-
-    return arr;
-  }
-
-  async deleteActivitiesByPlaylistId(playlistId) {
-    const query = {
-      text: 'DELETE FROM playlist_song_activities WHERE playlist_id = $1',
-      values: [playlistId],
-    };
-
-    await this._pool.query(query);
+    return result.rows;
   }
 }
 

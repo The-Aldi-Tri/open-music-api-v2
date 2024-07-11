@@ -47,19 +47,6 @@ class PlaylistsService {
     const result = await this._pool.query(query);
 
     if (!result.rowCount) {
-      throw new NotFoundError('Playlist tidak ditemukan');
-    }
-    return result.rows;
-  }
-
-  async getPlaylistsByOwnerV2(owner) {
-    const query = {
-      text: 'SELECT * FROM playlists WHERE owner = $1',
-      values: [owner],
-    };
-    const result = await this._pool.query(query);
-
-    if (!result.rowCount) {
       return [];
     }
     return result.rows;

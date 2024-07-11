@@ -61,22 +61,7 @@ class CollaborationsService {
 
     const result = await this._pool.query(query);
 
-    const arr = [];
-
-    for (let i = 0; i < result.rowCount; i += 1) {
-      arr.push(result.rows[i]);
-    }
-
-    return arr;
-  }
-
-  async deleteCollaborationsByPlaylistId(playlistId) {
-    const query = {
-      text: 'DELETE FROM collaborations WHERE playlist_id = $1',
-      values: [playlistId],
-    };
-
-    await this._pool.query(query);
+    return result.rows;
   }
 }
 

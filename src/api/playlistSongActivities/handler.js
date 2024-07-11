@@ -2,15 +2,15 @@ const AuthorizationError = require('../../exceptions/AuthorizationError');
 
 class PlaylistSongActivitiesHandler {
   constructor(
-    playlistSongActivitiesService,
+    service,
     playlistsService,
-    collaborationsService,
+    collabsService,
     usersService,
     songsService,
   ) {
-    this._playlistSongActivitiesService = playlistSongActivitiesService;
+    this._service = service;
     this._playlistsService = playlistsService;
-    this._collaborationsService = collaborationsService;
+    this._collabsService = collabsService;
     this._usersService = usersService;
     this._songsService = songsService;
   }
@@ -25,19 +25,19 @@ class PlaylistSongActivitiesHandler {
         owner: credentialId,
       },
     );
-    const isCollaborator = await this._collaborationsService.verifyCollaboration(
+    const isCollaborator = await this._collabsService.verifyCollaboration(
       {
         playlistId,
         userId: credentialId,
       },
     );
-
     if (!isOwner && !isCollaborator) {
       throw new AuthorizationError('Anda tidak berhak mengakses resource ini');
     }
 
-    const activities = await this._playlistSongActivitiesService.getActivitiesByPlaylistId(playlistId);
-    const activities2 = await Promise.all(activities.map(async (act) => {
+    const activityRecords = await this._service.getActivitiesByPlaylistId(playlistId);
+
+    const activities = await Promise.all(activityRecords.map(async (act) => {
       const { username } = await this._usersService.getUserById(act.user_id);
       const { title } = await this._songsService.getSongById(act.song_id);
       return {
@@ -50,10 +50,9 @@ class PlaylistSongActivitiesHandler {
 
     const response = h.response({
       status: 'success',
-      message: 'Activities berhasil ditemukan',
       data: {
         playlistId,
-        activities: activities2,
+        activities,
       },
     });
     response.code(200);

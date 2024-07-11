@@ -35,7 +35,7 @@ class PlaylistSongsService {
     if (!result.rowCount) {
       throw new NotFoundError('Playlist Song tidak ditemukan');
     }
-    return result.rows; // watch this
+    return result.rows;
   }
 
   async deletePlaylistSongBySongId(songId) {
@@ -49,15 +49,6 @@ class PlaylistSongsService {
     if (!result.rowCount) {
       throw new NotFoundError('Playlist Song gagal dihapus. Id tidak ditemukan');
     }
-  }
-
-  async deletePlaylistSongsByPlaylistId(playlistId) {
-    const query = {
-      text: 'DELETE FROM playlist_songs WHERE playlist_id = $1',
-      values: [playlistId],
-    };
-
-    await this._pool.query(query);
   }
 }
 

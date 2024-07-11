@@ -115,50 +115,50 @@ const init = async () => {
     {
       plugin: authentications,
       options: {
-        authenticationsService,
-        usersService,
+        service: authenticationsService,
         tokenManager: TokenManager,
         validator: AuthenticationsValidator,
+        usersService,
+
       },
     },
     {
       plugin: playlists,
       options: {
-        playlistsService,
-        playlistSongsService,
-        collaborationsService,
-        usersService,
-        playlistSongActivitiesService,
+        service: playlistsService,
         validator: PlaylistsValidator,
+        collabsService: collaborationsService,
+        usersService,
+
       },
     },
     {
       plugin: playlistSongs,
       options: {
-        playlistSongsService,
+        service: playlistSongsService,
+        validator: PlaylistSongsValidator,
         playlistsService,
         songsService,
         usersService,
-        collaborationsService,
-        playlistSongActivitiesService,
-        validator: PlaylistSongsValidator,
+        collabsService: collaborationsService,
+        activitiesService: playlistSongActivitiesService,
       },
     },
     {
       plugin: collaborations,
       options: {
-        collaborationsService,
+        service: collaborationsService,
+        validator: CollaborationsValidator,
         playlistsService,
         usersService,
-        validator: CollaborationsValidator,
       },
     },
     {
       plugin: playlistSongActivities,
       options: {
-        playlistSongActivitiesService,
+        service: playlistSongActivitiesService,
         playlistsService,
-        collaborationsService,
+        collabsService: collaborationsService,
         usersService,
         songsService,
       },

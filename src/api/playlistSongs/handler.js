@@ -2,21 +2,22 @@ const AuthorizationError = require('../../exceptions/AuthorizationError');
 
 class PlaylistSongsHandler {
   constructor(
-    playlistSongsService,
+    service,
+    validator,
     playlistsService,
     songsService,
     usersService,
-    collaborationsService,
-    playlistSongActivitiesService,
-    validator,
+    collabsService,
+    activitiesService,
+
   ) {
-    this._playlistSongsService = playlistSongsService;
+    this._service = service;
+    this._validator = validator;
     this._playlistsService = playlistsService;
     this._songsService = songsService;
     this._usersService = usersService;
-    this._collaborationsService = collaborationsService;
-    this._playlistSongActivitiesService = playlistSongActivitiesService;
-    this._validator = validator;
+    this._collabsService = collabsService;
+    this._activitiesService = activitiesService;
   }
 
   async postPlaylistSongHandler(request, h) {
@@ -34,20 +35,19 @@ class PlaylistSongsHandler {
         owner: credentialId,
       },
     );
-    const isCollaborator = await this._collaborationsService.verifyCollaboration(
+    const isCollaborator = await this._collabsService.verifyCollaboration(
       {
         playlistId,
         userId: credentialId,
       },
     );
-
     if (!isOwner && !isCollaborator) {
       throw new AuthorizationError('Anda tidak berhak mengakses resource ini');
     }
 
-    await this._playlistSongsService.addPlaylistSong({ playlistId, songId });
+    await this._service.addPlaylistSong({ playlistId, songId });
 
-    await this._playlistSongActivitiesService.addActivities({
+    await this._activitiesService.addActivities({
       playlistId,
       song_id: songId,
       user_id: credentialId,
@@ -62,7 +62,7 @@ class PlaylistSongsHandler {
     return response;
   }
 
-  async getPlaylistSongsHandler(request, h) {
+  async getPlaylistSongsHandler(request) {
     const { id: credentialId } = request.auth.credentials;
     const playlistId = request.params.id;
 
@@ -73,22 +73,24 @@ class PlaylistSongsHandler {
 
       },
     );
-    const isCollaborator = await this._collaborationsService.verifyCollaboration(
+    const isCollaborator = await this._collabsService.verifyCollaboration(
       {
         playlistId,
         userId: credentialId,
       },
     );
-
     if (!isOwner && !isCollaborator) {
       throw new AuthorizationError('Anda tidak berhak mengakses resource ini');
     }
 
     const playlist = await this._playlistsService.getPlaylistById(playlistId);
-    const playlistSongs = await this._playlistSongsService.getPlaylistSongsByPlaylistId(playlistId);
 
-    const songIds = playlistSongs.map((playlistSong) => playlistSong.song_id);
-    const songs = await this._songsService.getSongsByArrayOfId(songIds);
+    const playlistSongs = await this._service.getPlaylistSongsByPlaylistId(playlistId);
+
+    const songs = await Promise.all(playlistSongs.map(async (playlistSong) => {
+      const song = await this._songsService.getSongById(playlistSong.song_id);
+      return song;
+    }));
 
     const { username } = await this._usersService.getUserById(playlist.owner);
 
@@ -110,7 +112,7 @@ class PlaylistSongsHandler {
     };
   }
 
-  async deletePlaylistSongHandler(request, h) {
+  async deletePlaylistSongHandler(request) {
     this._validator.validatePostPlaylistSongPayload(request.payload);
 
     const { id: credentialId } = request.auth.credentials;
@@ -124,20 +126,19 @@ class PlaylistSongsHandler {
 
       },
     );
-    const isCollaborator = await this._collaborationsService.verifyCollaboration(
+    const isCollaborator = await this._collabsService.verifyCollaboration(
       {
         playlistId,
         userId: credentialId,
       },
     );
-
     if (!isOwner && !isCollaborator) {
       throw new AuthorizationError('Anda tidak berhak mengakses resource ini');
     }
 
-    await this._playlistSongsService.deletePlaylistSongBySongId(songId);
+    await this._service.deletePlaylistSongBySongId(songId);
 
-    await this._playlistSongActivitiesService.addActivities({
+    await this._activitiesService.addActivities({
       playlistId,
       song_id: songId,
       user_id: credentialId,
